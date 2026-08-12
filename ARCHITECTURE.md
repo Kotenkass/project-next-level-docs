@@ -7,7 +7,7 @@ This document describes the target architecture for the Next Level system. It co
 | Service | Purpose | Main storage / bus | Scaling approach |
 |---|---|---|---|
 | telegram-api | Existing Telegram adapter. Accepts user input from Telegram and forwards answer requests to `answers` via `POST /answers`. | HTTP to `answers`; Redis pub/sub for send/subscribe messaging where used. | Stateless API instances behind the Telegram callback/load-balanced endpoint; scale horizontally by replica count. |
-| scheduler | Existing scheduler. Publishes `weekly_reco` events for periodic recommendations. | Kafka/Redis bus depending on implementation; publishes `weekly_reco`. | Stateless job instances with a single active leader per schedule, or a distributed lock if multiple replicas are used. |
+| scheduler | Existing scheduler. Publishes `weekly_reco` events for periodic recommendations. | Redis channel/bus; publishes `weekly_reco`. | Stateless job instances with a single active leader per schedule, or a distributed lock if multiple replicas are used. |
 | users | Existing user service. Stores and serves user/account data and integrates with `web-admin`. | PostgreSQL. | Stateless API instances; PostgreSQL is scaled separately using read replicas if needed. |
 | web-admin | Administrative web interface. Serves browser clients through Ingress + WAF and integrates with `users`, `answers`, PostgreSQL, and analytics. | PostgreSQL for transactional/admin data; HTTP to `users`, `answers`, and analytics. | Stateless frontend/backend instances behind Ingress + WAF; scale horizontally by replica count. |
 | answers | New answer-processing service. Receives requests from `telegram-api`, produces `answers.received`, and uses Redis for cache/pub-sub/message buffering. | Kafka topic `answers.received`; Redis; PostgreSQL where transactional answer state is needed. | Stateless API/event producer instances; Kafka partitions and Redis replicas/shards scale throughput. |
@@ -19,7 +19,7 @@ This document describes the target architecture for the Next Level system. It co
 | Channel / topic | Producer | Consumer(s) | Transport | Why this transport |
 |---|---|---|---|---|
 | `answers.received` | `answers` | `analytics`; potentially `recommender` or other future consumers | Kafka | Durable event stream with replay, partitioning, and decoupling of answer production from analytics/recommendation processing. |
-| `weekly_reco` | `scheduler` | `recommender` or recommendation pipeline | Kafka | Durable scheduled event stream with replay and retry support for recommendation processing. |
+| `weekly_reco` | `scheduler` | `recommender` or recommendation pipeline | Redis | Scheduled event channel for recommendation processing; Redis is the transport specified for this scheduler message. |
 | `publish_send_message` | `telegram-api` or notification layer | Telegram sender workers / Redis subscribers | Redis | Low-latency pub/sub for immediate send commands and transient messaging. |
 | `subscribe` | Telegram/message receiver components | Redis subscribers / message handlers | Redis | Fast in-memory messaging for subscription-style updates; Redis already acts as cache and message broker in the architecture. |
 | Redis cache keys | Writers such as `answers`, `web-admin`, or API consumers | Readers of cached data | Redis | Low-latency cache for hot data, temporary state, and rate-limit/session-like data. |
