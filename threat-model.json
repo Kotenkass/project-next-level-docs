@@ -1,0 +1,3517 @@
+{
+  "version": "2.6.2",
+  "summary": {
+    "title": "Project Next — Threat Model",
+    "owner": "Project Next Team",
+    "description": "Threat model for Project Next Telegram Bot + LLM + Analytics + Web Admin architecture.",
+    "id": 1
+  },
+  "detail": {
+    "contributors": [
+      {
+        "name": "Project Next Team"
+      },
+      {
+        "name": "Security Reviewer"
+      }
+    ],
+    "diagrams": [
+      {
+        "id": 0,
+        "title": "Project Next STRIDE Data Flow",
+        "diagramType": "STRIDE",
+        "placeholder": "Project Next threat model diagram",
+        "thumbnail": "./public/content/images/thumbnail.stride.jpg",
+        "version": "2.6.2",
+        "cells": [
+          {
+            "position": {
+              "x": 40,
+              "y": 20
+            },
+            "size": {
+              "width": 260,
+              "height": 520
+            },
+            "attrs": {
+              "label": {
+                "text": "Internet"
+              }
+            },
+            "visible": true,
+            "shape": "trust-boundary-box",
+            "zIndex": -10,
+            "id": "internet-boundary",
+            "data": {
+              "type": "tm.BoundaryBox",
+              "name": "Internet",
+              "description": "External users and third-party APIs",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false,
+              "containedElements": [
+                "telegram-user",
+                "admin-browser",
+                "telegram-bot-api",
+                "openrouter-api"
+              ],
+              "crossingFlows": [
+                "flow-f2",
+                "flow-f14",
+                "flow-f15"
+              ]
+            }
+          },
+          {
+            "position": {
+              "x": 360,
+              "y": 20
+            },
+            "size": {
+              "width": 620,
+              "height": 520
+            },
+            "attrs": {
+              "label": {
+                "text": "K8s namespace dev"
+              }
+            },
+            "visible": true,
+            "shape": "trust-boundary-box",
+            "zIndex": -10,
+            "id": "dev-boundary",
+            "data": {
+              "type": "tm.BoundaryBox",
+              "name": "K8s namespace dev",
+              "description": "Main application services and stores",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false,
+              "containedElements": [
+                "telegram-api",
+                "scheduler",
+                "recommender",
+                "web-admin",
+                "users",
+                "analytics",
+                "postgresql",
+                "redis",
+                "clickhouse"
+              ],
+              "crossingFlows": [
+                "flow-f2",
+                "flow-f6",
+                "flow-f7",
+                "flow-f14",
+                "flow-f15",
+                "flow-f18"
+              ]
+            }
+          },
+          {
+            "position": {
+              "x": 1040,
+              "y": 20
+            },
+            "size": {
+              "width": 280,
+              "height": 240
+            },
+            "attrs": {
+              "label": {
+                "text": "K8s namespace kafka"
+              }
+            },
+            "visible": true,
+            "shape": "trust-boundary-box",
+            "zIndex": -10,
+            "id": "kafka-boundary",
+            "data": {
+              "type": "tm.BoundaryBox",
+              "name": "K8s namespace kafka",
+              "description": "Kafka cluster and answers.received topic",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false,
+              "containedElements": [
+                "kafka-cluster"
+              ],
+              "crossingFlows": []
+            }
+          },
+          {
+            "position": {
+              "x": 1040,
+              "y": 300
+            },
+            "size": {
+              "width": 280,
+              "height": 240
+            },
+            "attrs": {
+              "label": {
+                "text": "K8s namespace metrics"
+              }
+            },
+            "visible": true,
+            "shape": "trust-boundary-box",
+            "zIndex": -10,
+            "id": "metrics-boundary",
+            "data": {
+              "type": "tm.BoundaryBox",
+              "name": "K8s namespace metrics",
+              "description": "VictoriaMetrics and vmagent",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false,
+              "containedElements": [
+                "victoriametrics"
+              ],
+              "crossingFlows": [
+                "flow-f18"
+              ]
+            }
+          },
+          {
+            "position": {
+              "x": 80,
+              "y": 80
+            },
+            "size": {
+              "width": 150,
+              "height": 70
+            },
+            "attrs": {
+              "text": {
+                "text": "Telegram User"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "actor",
+            "zIndex": 2,
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "ca1d2b68-2368-43a5-9aa1-fbb57a6d793c"
+                },
+                {
+                  "group": "right",
+                  "id": "784f33f3-c0f8-4c0a-88a8-7957b5012305"
+                },
+                {
+                  "group": "bottom",
+                  "id": "4edddf22-e533-498f-ba76-d7d18c403733"
+                },
+                {
+                  "group": "left",
+                  "id": "28c08de1-e710-473f-aaaa-bf0e8718e09f"
+                }
+              ]
+            },
+            "id": "telegram-user",
+            "data": {
+              "type": "tm.Actor",
+              "name": "Telegram User",
+              "description": "User interacting with the Telegram bot",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "providesAuthentication": false,
+              "threats": []
+            }
+          },
+          {
+            "position": {
+              "x": 80,
+              "y": 170
+            },
+            "size": {
+              "width": 150,
+              "height": 70
+            },
+            "attrs": {
+              "text": {
+                "text": "User Browser / Admin"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "actor",
+            "zIndex": 2,
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "01dd1251-a5d9-4a82-9389-c1857426bb53"
+                },
+                {
+                  "group": "right",
+                  "id": "12fa97e3-b3d5-42ba-a586-0e9f87fbe7be"
+                },
+                {
+                  "group": "bottom",
+                  "id": "8e6b7d81-1b1c-4d3f-891a-a7bffde9f03f"
+                },
+                {
+                  "group": "left",
+                  "id": "71d6ac47-7de6-452d-9fe0-c452769e6c28"
+                }
+              ]
+            },
+            "id": "admin-browser",
+            "data": {
+              "type": "tm.Actor",
+              "name": "User Browser / Admin",
+              "description": "Browser user accessing web-admin",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "providesAuthentication": false,
+              "threats": []
+            }
+          },
+          {
+            "position": {
+              "x": 80,
+              "y": 290
+            },
+            "size": {
+              "width": 150,
+              "height": 70
+            },
+            "attrs": {
+              "text": {
+                "text": "Telegram Bot API"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 2,
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "d2dd4d24-e572-4f92-aaa5-8da5f1ecb23d"
+                },
+                {
+                  "group": "right",
+                  "id": "07611450-73b0-4ca1-ab0e-dfe4992309f5"
+                },
+                {
+                  "group": "bottom",
+                  "id": "a85ac57f-2067-4471-a4d1-e3e357dc9b07"
+                },
+                {
+                  "group": "left",
+                  "id": "9c9f250f-0aae-4b10-8556-22b69e97b94b"
+                }
+              ]
+            },
+            "id": "telegram-bot-api",
+            "data": {
+              "type": "tm.Process",
+              "name": "Telegram Bot API",
+              "description": "External Telegram API used by telegram-api polling loop",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "handlesCardPayment": false,
+              "handlesGoodsOrServices": false,
+              "isWebApplication": false,
+              "privilegeLevel": "",
+              "threats": []
+            }
+          },
+          {
+            "position": {
+              "x": 80,
+              "y": 400
+            },
+            "size": {
+              "width": 150,
+              "height": 70
+            },
+            "attrs": {
+              "text": {
+                "text": "OpenRouter API"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 2,
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "954e8126-8206-4f52-82ac-d1dac140c51e"
+                },
+                {
+                  "group": "right",
+                  "id": "131282e9-b3e8-45fd-842c-4098e234e765"
+                },
+                {
+                  "group": "bottom",
+                  "id": "b2293808-5529-4060-ae36-f14e6ad4b6ec"
+                },
+                {
+                  "group": "left",
+                  "id": "e03450be-04b4-4cd1-bca4-e69cc3cd7373"
+                }
+              ]
+            },
+            "id": "openrouter-api",
+            "data": {
+              "type": "tm.Process",
+              "name": "OpenRouter API",
+              "description": "External LLM provider API",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "handlesCardPayment": false,
+              "handlesGoodsOrServices": false,
+              "isWebApplication": false,
+              "privilegeLevel": "",
+              "threats": []
+            }
+          },
+          {
+            "position": {
+              "x": 420,
+              "y": 60
+            },
+            "size": {
+              "width": 120,
+              "height": 90
+            },
+            "attrs": {
+              "text": {
+                "text": "telegram-api\n:8080"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 3,
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "bb111318-b5f9-4cbf-a164-7be800f43536"
+                },
+                {
+                  "group": "right",
+                  "id": "2f6fbb2f-f6a8-4b25-9e82-fd7c4c8d919a"
+                },
+                {
+                  "group": "bottom",
+                  "id": "21a4822a-3039-488f-8deb-cdbb8e17baaf"
+                },
+                {
+                  "group": "left",
+                  "id": "590c3c24-bc88-43c9-83bb-98e95c17d860"
+                }
+              ]
+            },
+            "id": "telegram-api",
+            "data": {
+              "type": "tm.Process",
+              "name": "telegram-api :8080",
+              "description": "Receives Telegram messages, publishes events, interacts with Redis, users and web-admin",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "handlesCardPayment": false,
+              "handlesGoodsOrServices": false,
+              "isWebApplication": false,
+              "privilegeLevel": "",
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "Telegram token compromise",
+                  "type": "Spoofing",
+                  "modelType": "STRIDE",
+                  "description": "Compromise of TELEGRAM_TOKEN allows interaction with Telegram Bot API on behalf of the bot.",
+                  "mitigation": "Store TELEGRAM_TOKEN in Kubernetes Secret, restrict Secret access, do not log env, rotate token.",
+                  "id": "threat-telegram-api-spoofing"
+                },
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "Unauthenticated internal service calls",
+                  "type": "Information disclosure",
+                  "modelType": "STRIDE",
+                  "description": "Internal HTTP calls from telegram-api to users, web-admin, Redis and Kafka may lack mTLS or service authentication.",
+                  "mitigation": "Add mTLS or internal service authentication; restrict with NetworkPolicy.",
+                  "id": "threat-telegram-api-disclosure"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Telegram message flood",
+                  "type": "Denial of service",
+                  "modelType": "STRIDE",
+                  "description": "Missing rate limiting on incoming Telegram messages can overload telegram-api, Redis, Kafka and users.",
+                  "mitigation": "Rate limit by chat_id/user_id, add backpressure, resource limits and autoscaling.",
+                  "id": "threat-telegram-api-dos"
+                }
+              ]
+            }
+          },
+          {
+            "position": {
+              "x": 590,
+              "y": 80
+            },
+            "size": {
+              "width": 110,
+              "height": 90
+            },
+            "attrs": {
+              "text": {
+                "text": "scheduler"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 3,
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "c5ed67a6-5463-4aee-b194-7ca4833673f6"
+                },
+                {
+                  "group": "right",
+                  "id": "1c249c17-dac4-4893-8ddc-6095a4c71dbf"
+                },
+                {
+                  "group": "bottom",
+                  "id": "b61a96e4-7163-47a0-af82-dd1dfc527cac"
+                },
+                {
+                  "group": "left",
+                  "id": "ad177a3d-e36e-436c-9f43-d95737d5b16b"
+                }
+              ]
+            },
+            "id": "scheduler",
+            "data": {
+              "type": "tm.Process",
+              "name": "scheduler",
+              "description": "Background scheduler interacting with Redis and users",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "handlesCardPayment": false,
+              "handlesGoodsOrServices": false,
+              "isWebApplication": false,
+              "privilegeLevel": "",
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "Redis pub/sub tampering",
+                  "type": "Tampering",
+                  "modelType": "STRIDE",
+                  "description": "Scheduler reads or publishes Redis pub/sub without confirmed authentication.",
+                  "mitigation": "Enable Redis ACL/password, restrict NetworkPolicy, sign critical messages.",
+                  "id": "threat-scheduler-tampering"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Scheduler token disclosure",
+                  "type": "Information disclosure",
+                  "modelType": "STRIDE",
+                  "description": "Any pod with access to Secret or environment may read TELEGRAM_TOKEN.",
+                  "mitigation": "Restrict Secret access, do not log env, rotate tokens.",
+                  "id": "threat-scheduler-disclosure"
+                }
+              ]
+            }
+          },
+          {
+            "position": {
+              "x": 760,
+              "y": 80
+            },
+            "size": {
+              "width": 120,
+              "height": 90
+            },
+            "attrs": {
+              "text": {
+                "text": "recommender\n:8080"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 3,
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "592b869c-1104-409c-85ab-50e6a335b9f2"
+                },
+                {
+                  "group": "right",
+                  "id": "20e0cf2b-da82-4058-be6e-5ef1c1a0bef8"
+                },
+                {
+                  "group": "bottom",
+                  "id": "d95e72b6-0230-4e13-95e8-c4182f817764"
+                },
+                {
+                  "group": "left",
+                  "id": "094e0d45-ae5e-449b-92b5-7f9d60f14b26"
+                }
+              ]
+            },
+            "id": "recommender",
+            "data": {
+              "type": "tm.Process",
+              "name": "recommender :8080",
+              "description": "Generates recommendations using Redis, users, analytics and OpenRouter",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "handlesCardPayment": false,
+              "handlesGoodsOrServices": false,
+              "isWebApplication": false,
+              "privilegeLevel": "",
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "OpenRouter key compromise",
+                  "type": "Spoofing",
+                  "modelType": "STRIDE",
+                  "description": "Compromise of OPENROUTER_API_KEY allows use of project LLM quota or funds.",
+                  "mitigation": "Store key in Secret, restrict access, rotate key, configure provider budget and quotas.",
+                  "id": "threat-recommender-spoofing"
+                },
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "User data sent to external LLM",
+                  "type": "Information disclosure",
+                  "modelType": "STRIDE",
+                  "description": "Recommender sends user data to external OpenRouter API.",
+                  "mitigation": "Anonymize chat_id/user_id, remove PII from prompt, configure retention with provider.",
+                  "id": "threat-recommender-disclosure"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "LLM latency blocks recommendations",
+                  "type": "Denial of service",
+                  "modelType": "STRIDE",
+                  "description": "OpenRouter or LLM latency can block recommendation processing.",
+                  "mitigation": "Use rate limiter, max concurrency, circuit breaker, timeout and queue backpressure.",
+                  "id": "threat-recommender-dos"
+                }
+              ]
+            }
+          },
+          {
+            "position": {
+              "x": 420,
+              "y": 235
+            },
+            "size": {
+              "width": 120,
+              "height": 90
+            },
+            "attrs": {
+              "text": {
+                "text": "web-admin\n:8080"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 3,
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "fd1aeb72-07a0-43ac-88fa-11e5cc4034df"
+                },
+                {
+                  "group": "right",
+                  "id": "19a34000-d751-46f4-85fa-d51eb5d99964"
+                },
+                {
+                  "group": "bottom",
+                  "id": "02c1c245-f6b7-4e50-b02f-f17a23b3acf2"
+                },
+                {
+                  "group": "left",
+                  "id": "d5895830-5085-445f-a694-fb769ef34a34"
+                }
+              ]
+            },
+            "id": "web-admin",
+            "data": {
+              "type": "tm.Process",
+              "name": "web-admin :8080",
+              "description": "Web administration UI exposed through admin.sparktonapp.ru",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "handlesCardPayment": false,
+              "handlesGoodsOrServices": false,
+              "isWebApplication": true,
+              "privilegeLevel": "admin",
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Admin session spoofing",
+                  "type": "Spoofing",
+                  "modelType": "STRIDE",
+                  "description": "Compromise of SESSION_KEY can allow forged admin sessions.",
+                  "mitigation": "Store SESSION_KEY in Secret, rotate it, use HTTPOnly, Secure, SameSite cookies and short TTL.",
+                  "id": "threat-web-admin-spoofing"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Admin UI exposed to Internet",
+                  "type": "Information disclosure",
+                  "modelType": "STRIDE",
+                  "description": "Ingress admin.sparktonapp.ru exposes web-admin to the Internet.",
+                  "mitigation": "Keep TLS, add HSTS, rate limiting, authentication and audit logging.",
+                  "id": "threat-web-admin-disclosure"
+                },
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "Cross-user data access",
+                  "type": "Elevation of Privilege",
+                  "modelType": "STRIDE",
+                  "description": "web-admin may read analytics or users data without proper authorization checks.",
+                  "mitigation": "Authorize by chat_id/user_id and do not rely only on client-side checks.",
+                  "id": "threat-web-admin-eop"
+                }
+              ]
+            }
+          },
+          {
+            "position": {
+              "x": 590,
+              "y": 235
+            },
+            "size": {
+              "width": 110,
+              "height": 90
+            },
+            "attrs": {
+              "text": {
+                "text": "users\n:8080"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 3,
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "bf6bfa9a-3322-4fcd-a0b8-67416d1f4213"
+                },
+                {
+                  "group": "right",
+                  "id": "9ca9e908-b458-48f5-8499-a9a84a95062b"
+                },
+                {
+                  "group": "bottom",
+                  "id": "beb1f211-8183-4485-b017-842af3f8737d"
+                },
+                {
+                  "group": "left",
+                  "id": "8ffab4dd-f3a4-4c3c-ba3f-e34b4437409f"
+                }
+              ]
+            },
+            "id": "users",
+            "data": {
+              "type": "tm.Process",
+              "name": "users :8080",
+              "description": "User service and PostgreSQL-backed user data",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "handlesCardPayment": false,
+              "handlesGoodsOrServices": false,
+              "isWebApplication": false,
+              "privilegeLevel": "",
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "Unauthenticated users API",
+                  "type": "Spoofing",
+                  "modelType": "STRIDE",
+                  "description": "users API is available inside the cluster without confirmed caller authentication.",
+                  "mitigation": "Add internal service authentication or mTLS; restrict callers with NetworkPolicy.",
+                  "id": "threat-users-spoofing"
+                },
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "Unauthorized CRUD calls",
+                  "type": "Tampering",
+                  "modelType": "STRIDE",
+                  "description": "Any service in dev namespace may call users CRUD endpoints.",
+                  "mitigation": "Authorize by caller identity, use RBAC/NetworkPolicy and block unnecessary direct access.",
+                  "id": "threat-users-tampering"
+                },
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "PostgreSQL emptyDir data loss",
+                  "type": "Denial of service",
+                  "modelType": "STRIDE",
+                  "description": "users depends on PostgreSQL on emptyDir and can lose data when pod is recreated.",
+                  "mitigation": "Use PersistentVolumeClaim, backup/restore and readiness/liveness probes.",
+                  "id": "threat-users-dos"
+                }
+              ]
+            }
+          },
+          {
+            "position": {
+              "x": 760,
+              "y": 240
+            },
+            "size": {
+              "width": 120,
+              "height": 90
+            },
+            "attrs": {
+              "text": {
+                "text": "analytics\n:8080"
+              },
+              "body": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 3,
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "a8cd121e-bfb6-4a3f-b938-65ab9887d45d"
+                },
+                {
+                  "group": "right",
+                  "id": "047dbf2b-a4d2-46b0-9d31-33a1bf25498a"
+                },
+                {
+                  "group": "bottom",
+                  "id": "e39bd560-aec8-4349-b8b6-557ce4816ad1"
+                },
+                {
+                  "group": "left",
+                  "id": "bc47be9c-d353-4f6b-9f08-503c27a3e0a5"
+                }
+              ]
+            },
+            "id": "analytics",
+            "data": {
+              "type": "tm.Process",
+              "name": "analytics :8080",
+              "description": "Consumes Kafka events and writes analytics to ClickHouse",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "handlesCardPayment": false,
+              "handlesGoodsOrServices": false,
+              "isWebApplication": false,
+              "privilegeLevel": "",
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "Unverified Kafka event processing",
+                  "type": "Spoofing",
+                  "modelType": "STRIDE",
+                  "description": "Kafka consumer may process unverified events from answers.received.",
+                  "mitigation": "Use Kafka TLS listener 9093, ACLs/SASL and verify producer identity.",
+                  "id": "threat-analytics-spoofing"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Metrics endpoint disclosure",
+                  "type": "Information disclosure",
+                  "modelType": "STRIDE",
+                  "description": "/metrics is available without authentication and can reveal internal information.",
+                  "mitigation": "Restrict /metrics with NetworkPolicy, add metrics auth and avoid PII in metrics.",
+                  "id": "threat-analytics-disclosure"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Excessive analytics access",
+                  "type": "Elevation of Privilege",
+                  "modelType": "STRIDE",
+                  "description": "analytics may read or aggregate user data it should not access.",
+                  "mitigation": "Authorize at API level and minimize PII in Kafka and ClickHouse.",
+                  "id": "threat-analytics-eop"
+                }
+              ]
+            },
+            "tools": {
+              "items": [
+                "boundary",
+                "button-remove",
+                "boundary",
+                "button-remove"
+              ],
+              "name": null
+            }
+          },
+          {
+            "position": {
+              "x": 1080,
+              "y": 80
+            },
+            "size": {
+              "width": 130,
+              "height": 90
+            },
+            "attrs": {
+              "text": {
+                "text": "Kafka Cluster"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 3,
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "aefed939-f575-420b-97ab-b3d547d74df8"
+                },
+                {
+                  "group": "right",
+                  "id": "2f71b68e-9d7b-48c2-a143-7bad85c38d8f"
+                },
+                {
+                  "group": "bottom",
+                  "id": "d005efb6-a030-444f-97aa-6e169b641e1a"
+                },
+                {
+                  "group": "left",
+                  "id": "c019e80a-1442-4401-802f-77ac9bd95562"
+                }
+              ]
+            },
+            "id": "kafka-cluster",
+            "data": {
+              "type": "tm.Process",
+              "name": "Kafka Cluster",
+              "description": "Kafka broker cluster in namespace kafka",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "handlesCardPayment": false,
+              "handlesGoodsOrServices": false,
+              "isWebApplication": false,
+              "privilegeLevel": "",
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "Kafka plaintext listener",
+                  "type": "Information disclosure",
+                  "modelType": "STRIDE",
+                  "description": "Kafka has plaintext listener 9092 with tls=false.",
+                  "mitigation": "Use TLS listener 9093, disable plaintext listener and enable SASL/ACL.",
+                  "id": "threat-kafka-disclosure"
+                },
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "Kafka topic tampering",
+                  "type": "Tampering",
+                  "modelType": "STRIDE",
+                  "description": "Without ACL any authorized producer/consumer can write or read answers.received.",
+                  "mitigation": "Use Kafka ACLs, separate service accounts and restrict dev access.",
+                  "id": "threat-kafka-tampering"
+                },
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "Kafka availability weakness",
+                  "type": "Denial of service",
+                  "modelType": "STRIDE",
+                  "description": "Kafka replication factor and min.insync.replicas are set to 1.",
+                  "mitigation": "Increase replication factor and min ISR for production and monitor lag.",
+                  "id": "threat-kafka-dos"
+                }
+              ]
+            }
+          },
+          {
+            "position": {
+              "x": 1100,
+              "y": 375
+            },
+            "size": {
+              "width": 130,
+              "height": 90
+            },
+            "attrs": {
+              "text": {
+                "text": "VictoriaMetrics\n/vmagent"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 3,
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "c8b9c3ed-8a6e-45b9-8781-daa2db916563"
+                },
+                {
+                  "group": "right",
+                  "id": "92000ff8-85a8-4605-96c8-53752bf4013e"
+                },
+                {
+                  "group": "bottom",
+                  "id": "cbdc873b-4f6f-4ba6-9b81-d4fceadbbf15"
+                },
+                {
+                  "group": "left",
+                  "id": "ec72017a-acde-4d77-be66-462dfa364dad"
+                }
+              ]
+            },
+            "id": "victoriametrics",
+            "data": {
+              "type": "tm.Process",
+              "name": "VictoriaMetrics / vmagent",
+              "description": "Metrics scraping and storage",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "handlesCardPayment": false,
+              "handlesGoodsOrServices": false,
+              "isWebApplication": false,
+              "privilegeLevel": "",
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Metrics information disclosure",
+                  "type": "Information disclosure",
+                  "modelType": "STRIDE",
+                  "description": "vmagent scrapes /metrics endpoints in dev and kafka and may collect internal information.",
+                  "mitigation": "Restrict NetworkPolicy, do not emit secrets or PII in metrics, restrict query API access.",
+                  "id": "threat-metrics-disclosure"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Low",
+                  "title": "Scrape load",
+                  "type": "Denial of service",
+                  "modelType": "STRIDE",
+                  "description": "10s scrape interval can add load to services.",
+                  "mitigation": "Use a reasonable interval, resource limits and monitor scrape errors.",
+                  "id": "threat-metrics-dos"
+                }
+              ]
+            }
+          },
+          {
+            "position": {
+              "x": 420,
+              "y": 410
+            },
+            "size": {
+              "width": 120,
+              "height": 80
+            },
+            "attrs": {
+              "text": {
+                "text": "PostgreSQL\n:5432"
+              },
+              "topLine": {
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              },
+              "bottomLine": {
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "store",
+            "zIndex": 4,
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "2d050dc3-880f-4a4c-b523-0198e0836c37"
+                },
+                {
+                  "group": "right",
+                  "id": "89a81de4-b9ae-428f-b704-9aa2f24a1b23"
+                },
+                {
+                  "group": "bottom",
+                  "id": "40bd9846-9a3b-4970-a742-65924af88ab7"
+                },
+                {
+                  "group": "left",
+                  "id": "71145341-f7c8-4e92-be05-87593d14b157"
+                }
+              ]
+            },
+            "id": "postgresql",
+            "data": {
+              "type": "tm.Store",
+              "name": "PostgreSQL :5432",
+              "description": "User database store",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isALog": false,
+              "isEncrypted": false,
+              "isSigned": false,
+              "storesCredentials": true,
+              "storesInventory": false,
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Postgres secret exposure",
+                  "type": "Information disclosure",
+                  "modelType": "STRIDE",
+                  "description": "POSTGRES_PASSWORD is stored in Kubernetes Secret, which is not encryption at rest by itself.",
+                  "mitigation": "Restrict RBAC on secrets, use external secret manager and rotate credentials.",
+                  "id": "threat-postgres-disclosure"
+                },
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "PostgreSQL data loss",
+                  "type": "Denial of service",
+                  "modelType": "STRIDE",
+                  "description": "PostgreSQL uses emptyDir and can lose data when pod is recreated.",
+                  "mitigation": "Use PVC, backup/restore and monitor disk.",
+                  "id": "threat-postgres-dos"
+                }
+              ]
+            }
+          },
+          {
+            "position": {
+              "x": 590,
+              "y": 410
+            },
+            "size": {
+              "width": 120,
+              "height": 80
+            },
+            "attrs": {
+              "text": {
+                "text": "Redis\n:6379"
+              },
+              "topLine": {
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              },
+              "bottomLine": {
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "store",
+            "zIndex": 4,
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "b313796a-1229-46dd-b189-e81d8392b5c8"
+                },
+                {
+                  "group": "right",
+                  "id": "0c37b0ce-c822-49d9-b380-95bf2481e6a6"
+                },
+                {
+                  "group": "bottom",
+                  "id": "da01a0aa-2bc3-4071-8698-c897f3d48c93"
+                },
+                {
+                  "group": "left",
+                  "id": "57557605-2d5d-4654-a28f-b0da72820266"
+                }
+              ]
+            },
+            "id": "redis",
+            "data": {
+              "type": "tm.Store",
+              "name": "Redis :6379",
+              "description": "Cache and pub/sub store",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isALog": false,
+              "isEncrypted": false,
+              "isSigned": false,
+              "storesCredentials": true,
+              "storesInventory": false,
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "Redis pub/sub tampering",
+                  "type": "Tampering",
+                  "modelType": "STRIDE",
+                  "description": "Redis pub/sub may be available to any pod inside namespace without ACL/password authentication.",
+                  "mitigation": "Enable Redis ACL/password, separate users/channels and restrict NetworkPolicy.",
+                  "id": "threat-redis-tampering"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Redis user data disclosure",
+                  "type": "Information disclosure",
+                  "modelType": "STRIDE",
+                  "description": "Redis may store temporary user data, sessions or last recommendations.",
+                  "mitigation": "Do not store PII longer than necessary, enable auth and restrict access.",
+                  "id": "threat-redis-disclosure"
+                }
+              ]
+            }
+          },
+          {
+            "position": {
+              "x": 760,
+              "y": 410
+            },
+            "size": {
+              "width": 120,
+              "height": 80
+            },
+            "attrs": {
+              "text": {
+                "text": "ClickHouse\n:9000"
+              },
+              "topLine": {
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              },
+              "bottomLine": {
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "store",
+            "zIndex": 4,
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "29d4bd05-01fd-4c98-87db-8bf5a924f6e3"
+                },
+                {
+                  "group": "right",
+                  "id": "379889a8-5555-4217-8068-e6ba080f82e1"
+                },
+                {
+                  "group": "bottom",
+                  "id": "1dd712e6-3f20-4de8-9261-d6a05842828e"
+                },
+                {
+                  "group": "left",
+                  "id": "67f14319-01a5-47db-8ae4-7b748ee0f6fd"
+                }
+              ]
+            },
+            "id": "clickhouse",
+            "data": {
+              "type": "tm.Store",
+              "name": "ClickHouse :9000",
+              "description": "Analytics data store",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isALog": false,
+              "isEncrypted": false,
+              "isSigned": false,
+              "storesCredentials": false,
+              "storesInventory": false,
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "ClickHouse unauthenticated access",
+                  "type": "Information disclosure",
+                  "modelType": "STRIDE",
+                  "description": "ClickHouse manifests create no TLS certs and accessManagement is false.",
+                  "mitigation": "Enable TLS, access management, separate users/roles and restrict NetworkPolicy.",
+                  "id": "threat-clickhouse-disclosure"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Analytics data tampering",
+                  "type": "Tampering",
+                  "modelType": "STRIDE",
+                  "description": "A user with ClickHouse access may modify analytical data.",
+                  "mitigation": "Use RBAC/roles, audit, backups and readonly analytics roles.",
+                  "id": "threat-clickhouse-tampering"
+                }
+              ]
+            }
+          },
+          {
+            "position": {
+              "x": 1080,
+              "y": 190
+            },
+            "size": {
+              "width": 130,
+              "height": 80
+            },
+            "attrs": {
+              "text": {
+                "text": "answers.received"
+              },
+              "topLine": {
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              },
+              "bottomLine": {
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "store",
+            "zIndex": 4,
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "f2db7d39-3633-4ee2-9d1e-7e8b7f275ea7"
+                },
+                {
+                  "group": "right",
+                  "id": "9cd06788-dc0b-431f-a632-544d9d2333ad"
+                },
+                {
+                  "group": "bottom",
+                  "id": "021556c8-0f97-4755-a4fc-00cd86194a07"
+                },
+                {
+                  "group": "left",
+                  "id": "b48d5e11-352e-47c4-8ddb-de6d224bb6e0"
+                }
+              ]
+            },
+            "id": "answers-topic",
+            "data": {
+              "type": "tm.Store",
+              "name": "Kafka Topic answers.received",
+              "description": "Kafka topic for received answer events",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isALog": false,
+              "isEncrypted": false,
+              "isSigned": false,
+              "storesCredentials": false,
+              "storesInventory": false,
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "Topic event tampering",
+                  "type": "Tampering",
+                  "modelType": "STRIDE",
+                  "description": "Unauthorized producer may publish or modify events in answers.received.",
+                  "mitigation": "Use producer identity, Kafka ACLs and signed critical events.",
+                  "id": "threat-topic-tampering"
+                }
+              ]
+            }
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Telegram User to Telegram Bot API",
+              "description": "User sends messages to Telegram Bot API",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": true,
+              "protocol": "HTTPS",
+              "threats": [],
+              "trustBoundaryIds": []
+            },
+            "labels": [
+              {
+                "attrs": {
+                  "label": {
+                    "text": "Data Flow"
+                  },
+                  "text": {
+                    "text": "Telegram messages"
+                  }
+                }
+              }
+            ],
+            "id": "flow-f1",
+            "source": {
+              "cell": "telegram-user"
+            },
+            "target": {
+              "cell": "telegram-bot-api"
+            },
+            "vertices": []
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Telegram Bot API to telegram-api",
+              "description": "telegram-api polls Telegram Bot API using TELEGRAM_TOKEN",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": true,
+              "isEncrypted": true,
+              "isPublicNetwork": true,
+              "protocol": "HTTPS",
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "Telegram token compromise",
+                  "type": "Spoofing",
+                  "modelType": "STRIDE",
+                  "description": "Compromise of TELEGRAM_TOKEN allows reading or sending messages as the bot.",
+                  "mitigation": "Use Secret, RBAC on Secret, rotation and minimal logging.",
+                  "id": "threat-flow-f2-spoofing"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Token disclosure in transit or logs",
+                  "type": "Information disclosure",
+                  "modelType": "STRIDE",
+                  "description": "TELEGRAM_TOKEN may be disclosed if channel or logs are compromised.",
+                  "mitigation": "Use HTTPS only, do not log tokens and rotate on suspicion.",
+                  "id": "threat-flow-f2-disclosure"
+                }
+              ],
+              "trustBoundaryIds": [
+                "internet-boundary",
+                "dev-boundary"
+              ]
+            },
+            "labels": [
+              {
+                "attrs": {
+                  "label": {
+                    "text": "Data Flow"
+                  },
+                  "text": {
+                    "text": "F2 polling / token"
+                  }
+                }
+              }
+            ],
+            "id": "flow-f2",
+            "source": {
+              "cell": "telegram-bot-api"
+            },
+            "target": {
+              "cell": "telegram-api"
+            },
+            "vertices": []
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "telegram-api to Redis",
+              "description": "telegram-api uses Redis for cache/session/state",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "Redis",
+              "threats": [],
+              "trustBoundaryIds": []
+            },
+            "labels": [
+              {
+                "attrs": {
+                  "label": {
+                    "text": "Data Flow"
+                  },
+                  "text": {
+                    "text": "F3 cache/session"
+                  }
+                }
+              }
+            ],
+            "id": "flow-f3",
+            "source": {
+              "cell": "telegram-api"
+            },
+            "target": {
+              "cell": "redis"
+            },
+            "vertices": []
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "telegram-api to users",
+              "description": "telegram-api calls users service",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "HTTP",
+              "threats": [],
+              "trustBoundaryIds": []
+            },
+            "labels": [
+              {
+                "attrs": {
+                  "label": {
+                    "text": "Data Flow"
+                  },
+                  "text": {
+                    "text": "F4 users API"
+                  }
+                }
+              }
+            ],
+            "id": "flow-f4",
+            "source": {
+              "cell": "telegram-api"
+            },
+            "target": {
+              "cell": "users"
+            },
+            "vertices": []
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "telegram-api to web-admin",
+              "description": "telegram-api sends data to web-admin",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "HTTP",
+              "threats": [],
+              "trustBoundaryIds": []
+            },
+            "labels": [
+              {
+                "attrs": {
+                  "label": {
+                    "text": "Data Flow"
+                  },
+                  "text": {
+                    "text": "F5 admin data"
+                  }
+                }
+              }
+            ],
+            "id": "flow-f5",
+            "source": {
+              "cell": "telegram-api"
+            },
+            "target": {
+              "cell": "web-admin"
+            },
+            "vertices": []
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "telegram-api to Kafka topic answers.received",
+              "description": "telegram-api publishes answer events to Kafka",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "Kafka",
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "Kafka plaintext event transfer",
+                  "type": "Information disclosure",
+                  "modelType": "STRIDE",
+                  "description": "User event data is transferred between dev and kafka; plaintext listener 9092 allows interception inside the cluster.",
+                  "mitigation": "Use TLS listener 9093, disable plaintext listener and enable Kafka ACLs/SASL.",
+                  "id": "threat-flow-f6-disclosure"
+                },
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "Kafka event tampering",
+                  "type": "Tampering",
+                  "modelType": "STRIDE",
+                  "description": "Without ACL a producer/consumer can tamper with or read answers.received.",
+                  "mitigation": "Use Kafka ACLs, separate service accounts and verify producer identity.",
+                  "id": "threat-flow-f6-tampering"
+                }
+              ],
+              "trustBoundaryIds": [
+                "dev-boundary"
+              ]
+            },
+            "labels": [
+              {
+                "attrs": {
+                  "label": {
+                    "text": "Data Flow"
+                  },
+                  "text": {
+                    "text": "F6 events"
+                  }
+                }
+              }
+            ],
+            "id": "flow-f6",
+            "source": {
+              "cell": "telegram-api"
+            },
+            "target": {
+              "cell": "answers-topic"
+            },
+            "vertices": []
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Kafka topic answers.received to analytics",
+              "description": "analytics consumes events from Kafka",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "Kafka",
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "Unverified Kafka consumer",
+                  "type": "Spoofing",
+                  "modelType": "STRIDE",
+                  "description": "analytics may consume unverified events from answers.received.",
+                  "mitigation": "Use TLS, ACLs/SASL and producer identity checks.",
+                  "id": "threat-flow-f7-spoofing"
+                }
+              ],
+              "trustBoundaryIds": [
+                "dev-boundary"
+              ]
+            },
+            "labels": [
+              {
+                "attrs": {
+                  "label": {
+                    "text": "Data Flow"
+                  },
+                  "text": {
+                    "text": "F7 consume"
+                  }
+                }
+              }
+            ],
+            "id": "flow-f7",
+            "source": {
+              "cell": "answers-topic"
+            },
+            "target": {
+              "cell": "analytics"
+            },
+            "vertices": []
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "analytics to ClickHouse",
+              "description": "analytics writes analytics data to ClickHouse",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "ClickHouse",
+              "threats": [],
+              "trustBoundaryIds": []
+            },
+            "labels": [
+              {
+                "attrs": {
+                  "label": {
+                    "text": "Data Flow"
+                  },
+                  "text": {
+                    "text": "F8 write"
+                  }
+                }
+              }
+            ],
+            "id": "flow-f8",
+            "source": {
+              "cell": "analytics"
+            },
+            "target": {
+              "cell": "clickhouse"
+            },
+            "vertices": []
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "scheduler to Redis",
+              "description": "scheduler uses Redis for job state",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "Redis",
+              "threats": [],
+              "trustBoundaryIds": []
+            },
+            "labels": [
+              {
+                "attrs": {
+                  "label": {
+                    "text": "Data Flow"
+                  },
+                  "text": {
+                    "text": "F9 jobs"
+                  }
+                }
+              }
+            ],
+            "id": "flow-f9",
+            "source": {
+              "cell": "scheduler"
+            },
+            "target": {
+              "cell": "redis"
+            },
+            "vertices": [
+              {
+                "x": 645,
+                "y": 310
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "scheduler to users",
+              "description": "scheduler calls users service",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "HTTP",
+              "threats": [],
+              "trustBoundaryIds": []
+            },
+            "labels": [
+              {
+                "attrs": {
+                  "label": {
+                    "text": "Data Flow"
+                  },
+                  "text": {
+                    "text": "F10 users"
+                  }
+                }
+              }
+            ],
+            "id": "flow-f10",
+            "source": {
+              "cell": "scheduler"
+            },
+            "target": {
+              "cell": "users"
+            },
+            "vertices": []
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "recommender to Redis",
+              "description": "recommender uses Redis cache and pub/sub",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "Redis",
+              "threats": [],
+              "trustBoundaryIds": []
+            },
+            "labels": [
+              {
+                "attrs": {
+                  "label": {
+                    "text": "Data Flow"
+                  },
+                  "text": {
+                    "text": "F11 cache"
+                  }
+                }
+              }
+            ],
+            "id": "flow-f11",
+            "source": {
+              "cell": "recommender"
+            },
+            "target": {
+              "cell": "redis"
+            },
+            "vertices": []
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "recommender to users",
+              "description": "recommender reads user context",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "HTTP",
+              "threats": [],
+              "trustBoundaryIds": []
+            },
+            "labels": [
+              {
+                "attrs": {
+                  "label": {
+                    "text": "Data Flow"
+                  },
+                  "text": {
+                    "text": "F12 users"
+                  }
+                }
+              }
+            ],
+            "id": "flow-f12",
+            "source": {
+              "cell": "recommender"
+            },
+            "target": {
+              "cell": "users"
+            },
+            "vertices": []
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "recommender to analytics",
+              "description": "recommender reads analytics aggregates",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "HTTP",
+              "threats": [],
+              "trustBoundaryIds": []
+            },
+            "labels": [
+              {
+                "attrs": {
+                  "label": {
+                    "text": "Data Flow"
+                  },
+                  "text": {
+                    "text": "F13 analytics"
+                  }
+                }
+              }
+            ],
+            "id": "flow-f13",
+            "source": {
+              "cell": "recommender"
+            },
+            "target": {
+              "cell": "analytics"
+            },
+            "vertices": []
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "recommender to OpenRouter API",
+              "description": "recommender sends prompts to OpenRouter",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": true,
+              "protocol": "HTTPS",
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "OpenRouter API key compromise",
+                  "type": "Spoofing",
+                  "modelType": "STRIDE",
+                  "description": "OPENROUTER_API_KEY in Bearer header can be used if the pod is compromised.",
+                  "mitigation": "Use HTTPS, Secret, rotation and provider budget/quotas.",
+                  "id": "threat-flow-f14-spoofing"
+                },
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "PII sent to OpenRouter",
+                  "type": "Information disclosure",
+                  "modelType": "STRIDE",
+                  "description": "OpenRouter receives chatID and user analytics.",
+                  "mitigation": "Anonymize data before sending and remove PII from prompt.",
+                  "id": "threat-flow-f14-disclosure"
+                }
+              ],
+              "trustBoundaryIds": [
+                "internet-boundary",
+                "dev-boundary"
+              ]
+            },
+            "labels": [
+              {
+                "attrs": {
+                  "label": {
+                    "text": "Data Flow"
+                  },
+                  "text": {
+                    "text": "F14 LLM"
+                  }
+                }
+              }
+            ],
+            "id": "flow-f14",
+            "source": {
+              "cell": "recommender"
+            },
+            "target": {
+              "cell": "openrouter-api"
+            },
+            "vertices": []
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "User Browser to web-admin",
+              "description": "Admin accesses web-admin through Ingress",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": true,
+              "protocol": "HTTPS",
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Admin session spoofing",
+                  "type": "Spoofing",
+                  "modelType": "STRIDE",
+                  "description": "Compromise of SESSION_KEY can allow forged sessions.",
+                  "mitigation": "Use token TTL 15 minutes, session TTL 1 hour, HTTPOnly, Secure, SameSite and rotate SESSION_KEY.",
+                  "id": "threat-flow-f15-spoofing"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Public admin UI exposure",
+                  "type": "Information disclosure",
+                  "modelType": "STRIDE",
+                  "description": "Ingress admin.sparktonapp.ru exposes web-admin to Internet.",
+                  "mitigation": "Keep TLS via cert-manager, add HSTS, rate limiting and audit logging.",
+                  "id": "threat-flow-f15-disclosure"
+                }
+              ],
+              "trustBoundaryIds": [
+                "internet-boundary",
+                "dev-boundary"
+              ]
+            },
+            "labels": [
+              {
+                "attrs": {
+                  "label": {
+                    "text": "Data Flow"
+                  },
+                  "text": {
+                    "text": "F15 admin UI"
+                  }
+                }
+              }
+            ],
+            "id": "flow-f15",
+            "source": {
+              "cell": "admin-browser"
+            },
+            "target": {
+              "cell": "web-admin"
+            },
+            "vertices": []
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "web-admin to users",
+              "description": "web-admin calls users service",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "HTTP",
+              "threats": [],
+              "trustBoundaryIds": []
+            },
+            "labels": [
+              {
+                "attrs": {
+                  "label": {
+                    "text": "Data Flow"
+                  },
+                  "text": {
+                    "text": "F16 users"
+                  }
+                }
+              }
+            ],
+            "id": "flow-f16",
+            "source": {
+              "cell": "web-admin"
+            },
+            "target": {
+              "cell": "users"
+            },
+            "vertices": []
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "web-admin to analytics",
+              "description": "web-admin calls analytics service",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "HTTP",
+              "threats": [],
+              "trustBoundaryIds": []
+            },
+            "labels": [
+              {
+                "attrs": {
+                  "label": {
+                    "text": "Data Flow"
+                  },
+                  "text": {
+                    "text": "F17 analytics"
+                  }
+                }
+              }
+            ],
+            "id": "flow-f17",
+            "source": {
+              "cell": "web-admin"
+            },
+            "target": {
+              "cell": "analytics"
+            },
+            "vertices": [
+              {
+                "x": 630,
+                "y": 260
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "VictoriaMetrics/vmagent to metrics endpoints",
+              "description": "vmagent scrapes /metrics endpoints in dev and kafka",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "HTTP",
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Metrics disclosure",
+                  "type": "Information disclosure",
+                  "modelType": "STRIDE",
+                  "description": "VictoriaMetrics scrapes /metrics endpoints and metrics may reveal internal information.",
+                  "mitigation": "Do not emit PII or secrets in metrics, restrict query API and use NetworkPolicy.",
+                  "id": "threat-flow-f18-disclosure"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Low",
+                  "title": "Scrape-induced load",
+                  "type": "Denial of service",
+                  "modelType": "STRIDE",
+                  "description": "10s scrape interval may add load to services.",
+                  "mitigation": "Use reasonable interval, resource limits and monitor scrape errors.",
+                  "id": "threat-flow-f18-dos"
+                }
+              ],
+              "trustBoundaryIds": [
+                "dev-boundary",
+                "metrics-boundary"
+              ]
+            },
+            "labels": [
+              {
+                "attrs": {
+                  "label": {
+                    "text": "Data Flow"
+                  },
+                  "text": {
+                    "text": "F18 scrape 10s"
+                  }
+                }
+              }
+            ],
+            "id": "flow-f18",
+            "source": {
+              "cell": "victoriametrics"
+            },
+            "target": {
+              "cell": "telegram-api"
+            },
+            "vertices": []
+          }
+        ]
+      }
+    ],
+    "diagramTop": 1,
+    "reviewer": "Security Reviewer",
+    "threatTop": 50
+  }
+}
