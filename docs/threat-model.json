@@ -94,7 +94,8 @@
                 "analytics",
                 "postgresql",
                 "redis",
-                "clickhouse"
+                "clickhouse",
+                "vault"
               ],
               "crossingFlows": [
                 "flow-f2",
@@ -746,7 +747,7 @@
             "data": {
               "type": "tm.Process",
               "name": "telegram-api :8080",
-              "description": "Receives Telegram messages, publishes events, interacts with Redis, users and web-admin",
+              "description": "Receives Telegram messages, publishes events, interacts with Redis, users, web-admin and Vault for secrets",
               "outOfScope": false,
               "reasonOutOfScope": "",
               "hasOpenThreats": true,
@@ -762,7 +763,7 @@
                   "type": "Spoofing",
                   "modelType": "STRIDE",
                   "description": "Compromise of TELEGRAM_TOKEN allows interaction with Telegram Bot API on behalf of the bot.",
-                  "mitigation": "Store TELEGRAM_TOKEN in Kubernetes Secret, restrict Secret access, do not log env, rotate token.",
+                  "mitigation": "Store TELEGRAM_TOKEN in Vault with least-privilege policy, restrict Vault access, do not log secret values, rotate token.",
                   "id": "threat-telegram-api-spoofing"
                 },
                 {
@@ -896,7 +897,7 @@
             "data": {
               "type": "tm.Process",
               "name": "scheduler",
-              "description": "Background scheduler interacting with Redis and users",
+              "description": "Background scheduler interacting with Redis, users and Vault for TELEGRAM_TOKEN",
               "outOfScope": false,
               "reasonOutOfScope": "",
               "hasOpenThreats": true,
@@ -922,7 +923,7 @@
                   "type": "Information disclosure",
                   "modelType": "STRIDE",
                   "description": "Any pod with access to Secret or environment may read TELEGRAM_TOKEN.",
-                  "mitigation": "Restrict Secret access, do not log env, rotate tokens.",
+                  "mitigation": "Restrict Vault policy and service account access, do not log env, rotate tokens and revoke leaked Vault tokens.",
                   "id": "threat-scheduler-disclosure"
                 }
               ]
@@ -1036,7 +1037,7 @@
             "data": {
               "type": "tm.Process",
               "name": "recommender :8080",
-              "description": "Generates recommendations using Redis, users, analytics and OpenRouter",
+              "description": "Generates recommendations using Redis, users, analytics, OpenRouter and Vault for OPENROUTER_API_KEY",
               "outOfScope": false,
               "reasonOutOfScope": "",
               "hasOpenThreats": true,
@@ -1052,7 +1053,7 @@
                   "type": "Spoofing",
                   "modelType": "STRIDE",
                   "description": "Compromise of OPENROUTER_API_KEY allows use of project LLM quota or funds.",
-                  "mitigation": "Store key in Secret, restrict access, rotate key, configure provider budget and quotas.",
+                  "mitigation": "Store key in Vault, restrict access by service account, rotate key, configure provider budget and quotas.",
                   "id": "threat-recommender-spoofing"
                 },
                 {
@@ -1186,7 +1187,7 @@
             "data": {
               "type": "tm.Process",
               "name": "web-admin :8080",
-              "description": "Web administration UI exposed through admin.sparktonapp.ru",
+              "description": "Web administration UI exposed through admin.sparktonapp.ru, uses Vault for SESSION_KEY",
               "outOfScope": false,
               "reasonOutOfScope": "",
               "hasOpenThreats": true,
@@ -1202,7 +1203,7 @@
                   "type": "Spoofing",
                   "modelType": "STRIDE",
                   "description": "Compromise of SESSION_KEY can allow forged admin sessions.",
-                  "mitigation": "Store SESSION_KEY in Secret, rotate it, use HTTPOnly, Secure, SameSite cookies and short TTL.",
+                  "mitigation": "Store SESSION_KEY in Vault, rotate it, use HTTPOnly, Secure, SameSite cookies and short TTL.",
                   "id": "threat-web-admin-spoofing"
                 },
                 {
@@ -1336,7 +1337,7 @@
             "data": {
               "type": "tm.Process",
               "name": "users :8080",
-              "description": "User service and PostgreSQL-backed user data",
+              "description": "User service, PostgreSQL-backed user data and Vault for database credentials",
               "outOfScope": false,
               "reasonOutOfScope": "",
               "hasOpenThreats": true,
@@ -1526,15 +1527,6 @@
                   "id": "threat-analytics-eop"
                 }
               ]
-            },
-            "tools": {
-              "items": [
-                "boundary",
-                "button-remove",
-                "boundary",
-                "button-remove"
-              ],
-              "name": null
             }
           },
           {
@@ -1829,7 +1821,7 @@
           },
           {
             "position": {
-              "x": 420,
+              "x": 380,
               "y": 410
             },
             "size": {
@@ -1954,8 +1946,8 @@
                   "title": "Postgres secret exposure",
                   "type": "Information disclosure",
                   "modelType": "STRIDE",
-                  "description": "POSTGRES_PASSWORD is stored in Kubernetes Secret, which is not encryption at rest by itself.",
-                  "mitigation": "Restrict RBAC on secrets, use external secret manager and rotate credentials.",
+                  "description": "POSTGRES_PASSWORD is stored in Vault; broad Vault policies or compromised users service can expose it.",
+                  "mitigation": "Restrict Vault policy to users service, use short-lived credentials where possible and rotate credentials.",
                   "id": "threat-postgres-disclosure"
                 },
                 {
@@ -1973,7 +1965,7 @@
           },
           {
             "position": {
-              "x": 590,
+              "x": 540,
               "y": 410
             },
             "size": {
@@ -2117,7 +2109,7 @@
           },
           {
             "position": {
-              "x": 760,
+              "x": 690,
               "y": 410
             },
             "size": {
@@ -2255,6 +2247,160 @@
                   "description": "A user with ClickHouse access may modify analytical data.",
                   "mitigation": "Use RBAC/roles, audit, backups and readonly analytics roles.",
                   "id": "threat-clickhouse-tampering"
+                }
+              ]
+            }
+          },
+          {
+            "position": {
+              "x": 850,
+              "y": 410
+            },
+            "size": {
+              "width": 120,
+              "height": 80
+            },
+            "attrs": {
+              "text": {
+                "text": "Vault\\n:8200"
+              },
+              "topLine": {
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              },
+              "bottomLine": {
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "store",
+            "zIndex": 4,
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "6a21f3d0-7a8a-4d2d-a18e-7d8f8b0e6f1a"
+                },
+                {
+                  "group": "right",
+                  "id": "0e82b9a1-3d0c-4f2a-9c4a-b389c39e3c14"
+                },
+                {
+                  "group": "bottom",
+                  "id": "5e05f42c-55b3-4e3a-a41a-14e151c27d81"
+                },
+                {
+                  "group": "left",
+                  "id": "6d67f68a-5095-4e44-a0d9-64097a1e2a26"
+                }
+              ]
+            },
+            "id": "vault",
+            "data": {
+              "type": "tm.Store",
+              "name": "Vault :8200",
+              "description": "Central secret store for service credentials and API keys",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isALog": false,
+              "isEncrypted": true,
+              "isSigned": false,
+              "storesCredentials": true,
+              "storesInventory": false,
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "Vault policy bypass",
+                  "type": "Elevation of Privilege",
+                  "modelType": "STRIDE",
+                  "description": "Overly broad Vault policies or Kubernetes service account bindings may let a service read secrets it does not need.",
+                  "mitigation": "Use least-privilege Vault policies, bind secrets to service accounts, audit secret reads and rotate exposed credentials.",
+                  "id": "threat-vault-eop"
+                },
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "Vault token leakage",
+                  "type": "Information disclosure",
+                  "modelType": "STRIDE",
+                  "description": "Vault tokens or AppRole responses may be exposed through environment variables, logs or pod compromise.",
+                  "mitigation": "Use short TTL tokens, avoid logging Vault responses, inject secrets only into required pods and revoke leaked tokens.",
+                  "id": "threat-vault-disclosure"
+                },
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Vault availability dependency",
+                  "type": "Denial of service",
+                  "modelType": "STRIDE",
+                  "description": "Services that fetch secrets at startup may fail if Vault is unavailable.",
+                  "mitigation": "Run Vault highly available, cache only necessary secrets with TTL, add readiness checks and secret-refresh fallback.",
+                  "id": "threat-vault-dos"
                 }
               ]
             }
@@ -2485,7 +2631,7 @@
                   "type": "Spoofing",
                   "modelType": "STRIDE",
                   "description": "Compromise of TELEGRAM_TOKEN allows reading or sending messages as the bot.",
-                  "mitigation": "Use Secret, RBAC on Secret, rotation and minimal logging.",
+                  "mitigation": "Use Vault for TELEGRAM_TOKEN, restrict Vault policy, rotate token and minimize logging.",
                   "id": "threat-flow-f2-spoofing"
                 },
                 {
@@ -2495,7 +2641,7 @@
                   "type": "Information disclosure",
                   "modelType": "STRIDE",
                   "description": "TELEGRAM_TOKEN may be disclosed if channel or logs are compromised.",
-                  "mitigation": "Use HTTPS only, do not log tokens and rotate on suspicion.",
+                  "mitigation": "Use HTTPS only, do not log tokens and rotate on suspicion; protect Vault retrieval path with short TTL.",
                   "id": "threat-flow-f2-disclosure"
                 }
               ],
@@ -2630,6 +2776,81 @@
             },
             "target": {
               "cell": "users"
+            },
+            "vertices": []
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "users to PostgreSQL",
+              "description": "users service reads and writes user data to PostgreSQL store",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "PostgreSQL",
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Plaintext PostgreSQL connection",
+                  "type": "Information disclosure",
+                  "modelType": "STRIDE",
+                  "description": "users connects to PostgreSQL with sslmode=disable over the network; credentials live in DATABASE_URL / Vault.",
+                  "mitigation": "Enable TLS for PostgreSQL connections (sslmode=require/verify-full) and restrict NetworkPolicy so only users pod can reach :5432.",
+                  "id": "threat-flow-f24-pg-plaintext"
+                },
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "SQL injection via users queries",
+                  "type": "Tampering",
+                  "modelType": "STRIDE",
+                  "description": "user-controlled data may reach SQL queries if not parameterized, leading to data tampering or exposure.",
+                  "mitigation": "Use parameterized queries / ORM, apply least-privilege DB role and input validation in the users service.",
+                  "id": "threat-flow-f24-pg-sqli"
+                }
+              ],
+              "trustBoundaryIds": []
+            },
+            "labels": [
+              {
+                "attrs": {
+                  "label": {
+                    "text": "Data Flow"
+                  },
+                  "text": {
+                    "text": "users <-> postgres"
+                  }
+                }
+              }
+            ],
+            "id": "flow-f24",
+            "source": {
+              "cell": "users"
+            },
+            "target": {
+              "cell": "postgresql"
             },
             "vertices": []
           },
@@ -2882,6 +3103,331 @@
             },
             "target": {
               "cell": "clickhouse"
+            },
+            "vertices": []
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Vault to telegram-api",
+              "description": "telegram-api retrieves TELEGRAM_TOKEN from Vault at startup or refresh",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": false,
+              "protocol": "Vault API / HTTPS",
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "TELEGRAM_TOKEN retrieval compromise",
+                  "type": "Spoofing",
+                  "modelType": "STRIDE",
+                  "description": "TELEGRAM_TOKEN is retrieved from Vault; compromised service account, Vault token or policy can disclose or replay the secret.",
+                  "mitigation": "Bind Vault policy to telegram-api service account, use short TTL credentials, audit reads and rotate token.",
+                  "id": "threat-flow-f19-spoofing"
+                }
+              ],
+              "trustBoundaryIds": []
+            },
+            "labels": [
+              {
+                "attrs": {
+                  "label": {
+                    "text": "Data Flow"
+                  },
+                  "text": {
+                    "text": "F19 secret"
+                  }
+                }
+              }
+            ],
+            "id": "flow-f19",
+            "source": {
+              "cell": "vault"
+            },
+            "target": {
+              "cell": "telegram-api"
+            },
+            "vertices": []
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Vault to scheduler",
+              "description": "scheduler retrieves TELEGRAM_TOKEN from Vault for polling or token refresh",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": false,
+              "protocol": "Vault API / HTTPS",
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "TELEGRAM_TOKEN retrieval compromise",
+                  "type": "Spoofing",
+                  "modelType": "STRIDE",
+                  "description": "TELEGRAM_TOKEN is retrieved from Vault; compromised service account, Vault token or policy can disclose or replay the secret.",
+                  "mitigation": "Limit scheduler Vault role to TELEGRAM_TOKEN only, use short TTL and revoke leaked Vault tokens.",
+                  "id": "threat-flow-f20-spoofing"
+                }
+              ],
+              "trustBoundaryIds": []
+            },
+            "labels": [
+              {
+                "attrs": {
+                  "label": {
+                    "text": "Data Flow"
+                  },
+                  "text": {
+                    "text": "F20 secret"
+                  }
+                }
+              }
+            ],
+            "id": "flow-f20",
+            "source": {
+              "cell": "vault"
+            },
+            "target": {
+              "cell": "scheduler"
+            },
+            "vertices": []
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Vault to recommender",
+              "description": "recommender retrieves OPENROUTER_API_KEY from Vault before calling OpenRouter",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": false,
+              "protocol": "Vault API / HTTPS",
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "OPENROUTER_API_KEY retrieval compromise",
+                  "type": "Spoofing",
+                  "modelType": "STRIDE",
+                  "description": "OPENROUTER_API_KEY is retrieved from Vault; compromised service account, Vault token or policy can disclose or replay the secret.",
+                  "mitigation": "Use least-privilege Vault policy, avoid logging key, enforce provider quotas and rotate key.",
+                  "id": "threat-flow-f21-spoofing"
+                }
+              ],
+              "trustBoundaryIds": []
+            },
+            "labels": [
+              {
+                "attrs": {
+                  "label": {
+                    "text": "Data Flow"
+                  },
+                  "text": {
+                    "text": "F21 secret"
+                  }
+                }
+              }
+            ],
+            "id": "flow-f21",
+            "source": {
+              "cell": "vault"
+            },
+            "target": {
+              "cell": "recommender"
+            },
+            "vertices": []
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Vault to web-admin",
+              "description": "web-admin retrieves SESSION_KEY from Vault for admin session signing",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": false,
+              "protocol": "Vault API / HTTPS",
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "SESSION_KEY retrieval compromise",
+                  "type": "Spoofing",
+                  "modelType": "STRIDE",
+                  "description": "SESSION_KEY is retrieved from Vault; compromised service account, Vault token or policy can disclose or replay the secret.",
+                  "mitigation": "Restrict Vault access to web-admin, rotate SESSION_KEY and enforce short session TTL.",
+                  "id": "threat-flow-f22-spoofing"
+                }
+              ],
+              "trustBoundaryIds": []
+            },
+            "labels": [
+              {
+                "attrs": {
+                  "label": {
+                    "text": "Data Flow"
+                  },
+                  "text": {
+                    "text": "F22 secret"
+                  }
+                }
+              }
+            ],
+            "id": "flow-f22",
+            "source": {
+              "cell": "vault"
+            },
+            "target": {
+              "cell": "web-admin"
+            },
+            "vertices": []
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Vault to users",
+              "description": "users service retrieves PostgreSQL credentials from Vault",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": false,
+              "protocol": "Vault API / HTTPS",
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "POSTGRES_PASSWORD retrieval compromise",
+                  "type": "Spoofing",
+                  "modelType": "STRIDE",
+                  "description": "POSTGRES_PASSWORD is retrieved from Vault; compromised service account, Vault token or policy can disclose or replay the secret.",
+                  "mitigation": "Grant users service only DB credential path, prefer short-lived DB credentials and rotate password.",
+                  "id": "threat-flow-f23-spoofing"
+                }
+              ],
+              "trustBoundaryIds": []
+            },
+            "labels": [
+              {
+                "attrs": {
+                  "label": {
+                    "text": "Data Flow"
+                  },
+                  "text": {
+                    "text": "F23 secret"
+                  }
+                }
+              }
+            ],
+            "id": "flow-f23",
+            "source": {
+              "cell": "vault"
+            },
+            "target": {
+              "cell": "users"
             },
             "vertices": []
           },
@@ -3198,7 +3744,7 @@
                   "type": "Spoofing",
                   "modelType": "STRIDE",
                   "description": "OPENROUTER_API_KEY in Bearer header can be used if the pod is compromised.",
-                  "mitigation": "Use HTTPS, Secret, rotation and provider budget/quotas.",
+                  "mitigation": "Use HTTPS, Vault-managed OPENROUTER_API_KEY, rotation and provider budget/quotas.",
                   "id": "threat-flow-f14-spoofing"
                 },
                 {
@@ -3276,7 +3822,7 @@
                   "type": "Spoofing",
                   "modelType": "STRIDE",
                   "description": "Compromise of SESSION_KEY can allow forged sessions.",
-                  "mitigation": "Use token TTL 15 minutes, session TTL 1 hour, HTTPOnly, Secure, SameSite and rotate SESSION_KEY.",
+                  "mitigation": "Use Vault-managed SESSION_KEY, token TTL 15 minutes, session TTL 1 hour, HTTPOnly, Secure, SameSite and rotate SESSION_KEY.",
                   "id": "threat-flow-f15-spoofing"
                 },
                 {
@@ -3512,6 +4058,6 @@
     ],
     "diagramTop": 1,
     "reviewer": "Security Reviewer",
-    "threatTop": 50
+    "threatTop": 60
   }
 }
