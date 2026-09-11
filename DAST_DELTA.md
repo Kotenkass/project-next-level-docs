@@ -7,118 +7,72 @@ Branch: `task13`
 
 ## Executive summary
 
-WAF (ingress-nginx + ModSecurity + OWASP CRS) was enabled in **On** mode after a
-`DetectionOnly` false-positive tuning phase. Two ZAP baseline reports were
-recorded:
+WAF (ingress-nginx + ModSecurity + OWASP CRS) was enabled in **On** mode.
+Two ZAP baseline reports were recorded:
 
-| Scan | Report file | High | Medium | Low | Informational |
-|------|-------------|------|--------|-----|---------------|
-| Before WAF | `zap-report-before-waf.json` | 0 | 1 | 3 | 5 |
-| After WAF  | `zap-report-after-waf.json`  | 0 | 0 | 1 | 4 |
+| Scan | Run ID | High | Medium | Low | Informational |
+|------|--------|------|--------|-----|---------------|
+| Before WAF (DetectionOnly) | 34654070961 | 0 | 0 | 0 | 2 |
+| After WAF (On) | 34654230118 | 0 | 0 | 0 | 2 |
 
-> Numbers are representative baseline-scan snapshots. Re-run the job to refresh
-> after production traffic has flowed through `DetectionOnly`.
+> **Note:** The application requires authentication (returns 401 without valid session),
+> so ZAP baseline scan can only access public endpoints (/, /robots.txt, /sitemap.xml).
+> No application-level vulnerabilities were found in either scan.
 
-## Alerts that disappeared after enabling WAF
+## What changed
 
-### Medium (1 → 0)
+### Manual XSS probe test
 
-1. **Cross-Domain JavaScript Source File Inclusion**
-   - ZAP alert: JavaScript loaded from an external domain without SRI.
-   - Why it disappeared: ZAP baseline no longer reaches the origin response body
-     through the CRS anomaly score path, and the external script inclusion is not
-     surfaced as an alert in the post-WAF report because the scan engine is
-     served the WAF error page on several deep URLs. This is expected baseline
-     noise reduction rather than a real fix; the proper remediation is to add
-     `integrity` attributes to third-party scripts.
+| Test | Command | Result |
+|------|---------|--------|
+| Without WAF | `curl https://admin.sparktonapp.ru/?q=%3Cscript%3Ealert(1)%3C/script%3E` | 401 (passed through) |
+| With WAF | `curl https://admin.sparktonapp.ru/?q=%3Cscript%3Ealert(1)%3C/script%3E` | **403 blocked** |
 
-### Low (3 → 1)
+### Ingress-nginx logs with WAF enabled
 
-1. **X-Content-Type-Options Header Missing**
-   - Disappeared because ingress-nginx adds `X-Content-Type-Options: nosniff` by
-     default when ModSecurity/CRS is active and response body processing is on.
-     The application itself should still set security headers explicitly as a
-     defense-in-depth measure.
-
-2. **Server Leaks Information via "X-Powered-By" HTTP Response Header Field(s)**
-   - Disappeared because CRS hardening defaults strip or normalize verbose
-     response headers. Verify with a manual `curl -I` that no `X-Powered-By` is
-     returned.
-
-## Alert that remained after WAF
-
-### Low (1)
-
-1. **Strict-Transport-Security Header Not Set**
-   - Remained because HSTS must be configured at the ingress level explicitly; it
-     is not added automatically by CRS.
-   - **Action**: add `nginx.ingress.kubernetes.io/configuration-snippet: |
-       add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;`
-     to the ingress annotations.
-
-## Informational alerts
-
-These are mostly header/config observations (e.g. `Content Security Policy (CSP)
-Header Not Set`, `Timestamp Disclosure`). They remained because they are not
-security findings CRS can block; they require application-level changes.
-
-## False-positive tuning performed during DetectionOnly
-
-During the `DetectionOnly` phase the following CRS rules were reviewed and kept
-enabled because no legitimate traffic triggered them:
-
-- 941100/941110 (XSS) — required for the task probe `?q=<script>alert(1)</script>`.
-- 942100 (SQLi) — standard CRS SQLi family.
-- 920350/920360 (missing/unknown host header, protocol version) — blocked bot probes.
-
-No false positives requiring rule exclusions were observed for the current
-web-admin traffic profile. If future legitimate requests trigger CRS, add an
-exclusion snippet such as:
-
-```apache
-SecRule REQUEST_URI "@streq /internal/token" \
-  "id:1002001,phase:2,pass,nolog,\
-   ctl:ruleRemoveById=941100"
+```
+2026/09/11 22:11:40 [error] 942#942: *663 [client 31.76.38.78] ModSecurity: Access denied with code 403 (phase 2). detected XSS using libinjection. [id "1099"] [msg "XSS blocked"] [tag "task13"] ...
 ```
 
-## Verification commands
+## Alerts found (informational)
+
+Both scans found only cache-related informational alerts:
+
+1. **Non-Storable Content** - Response has `WWW-Authenticate` header requiring auth
+2. **Storable and Cacheable Content** - /robots.txt and /sitemap.xml are cacheable
+
+These are expected for a protected endpoint and not security issues.
+
+## WAF configuration
+
+- **Repository:** `project-next-charts`
+- **File:** `manifests/web-admin/web-admin-ingress-dev.yaml`
+- **Config:**
+  - `SecRuleEngine On`
+  - OWASP CRS enabled via `nginx.ingress.kubernetes.io/enable-owasp-core-rules: "true"`
+  - Virtual patch for XSS: `SecRule ARGS:q "@detectXSS" "id:1099,phase:2,deny,status:403"`
+
+## Verification
 
 ```bash
-# 1. Check ModSecurity + CRS mode in the ingress controller namespace
-kubectl get pods -n ingress-nginx
-kubectl exec -n ingress-nginx deploy/ingress-nginx-controller -- \
-  cat /etc/nginx/modsecurity/modsecurity.conf | grep -E "SecRuleEngine|SecDefaultAction"
+# Test XSS probe - should return 403 with WAF On
+curl -s -o /dev/null -w "%{http_code}" "https://admin.sparktonapp.ru/?q=%3Cscript%3Ealert(1)%3C/script%3E"
 
-# 2. XSS probe must return 403
-kubectl run -n dev curl --rm -i --restart=Never --image=curlimages/curl -- \
-  -k -s -o /dev/null -w "%{http_code}\n" \
-  "https://admin.sparktonapp.ru/?q=%3Cscript%3Ealert(1)%3C/script%3E"
-
-# 3. CRS log line in ingress controller
-kubectl logs -n ingress-nginx deploy/ingress-nginx-controller --tail=50 | \
-  grep -E "941100|941110|XSS|ModSecurity"
-
-# 4. Rate-limit probe (should return 429 after threshold)
-for i in {1..15}; do
-  kubectl run -n dev curl --rm -i --restart=Never --image=curlimages/curl -- \
-    -k -s -o /dev/null -w "%{http_code}\n" \
-    https://admin.sparktonapp.ru/c/test-token-$i
-done
+# Check WAF logs
+kubectl logs -n ingress-nginx deploy/ingress-nginx-controller | grep -E "ModSecurity|1099|XSS"
 ```
 
 ## Artifacts
 
-- `zap-report-before-waf.json` / `.html` — CI artifact from the baseline scan
-  before WAF.
-- `zap-report-after-waf.json` / `.html` — CI artifact from the baseline scan
-  after WAF was switched to `On`.
-- `web-admin-ingress-dev.yaml` — ingress manifest with ModSecurity/CRS + rate
-  limits.
-- `.github/workflows/dast.yml` — scheduled ZAP baseline job.
+- DAST scan (DetectionOnly): https://github.com/Kotenkass/web-admin/actions/runs/34654070961
+- DAST scan (WAF On): https://github.com/Kotenkass/web-admin/actions/runs/34654230118
+- Ingress manifest: `project-next-charts/manifests/web-admin/web-admin-ingress-dev.yaml`
+- DAST workflow: `web-admin/.github/workflows/dast.yml`
 
-## References
+## Conclusion
 
-- ingress-nginx ModSecurity docs:
-  https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/#modsecurity
-- OWASP CRS: https://coreruleset.org/
-- OWASP ZAP baseline scan: https://www.zaproxy.org/docs/docker/baseline-scan/
+WAF is working correctly:
+- XSS probes are blocked with HTTP 403
+- ModSecurity logs show the block with rule ID 1099
+- ZAP baseline scan cannot find vulnerabilities because the app is protected by auth
+- No false positives were observed during DetectionOnly phase
